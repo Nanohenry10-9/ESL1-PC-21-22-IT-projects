@@ -8,7 +8,19 @@ DB_NAME = "database.db"
 
 def create_app():
     app = Flask(__name__)
-    app.config['SECRET_KEY'] = 'hjshjhdjah kjshkjdhjs'
+
+    """
+    
+    ================================================================================
+
+    NOTE: replace the secret key below with something secure (and hopefully random)!
+          If you fail to do this, client sessions' security cannot be guaranteed.
+
+    ================================================================================
+
+    """
+
+    app.config['SECRET_KEY'] = '[password here, please!]'
     app.config['SQLALCHEMY_DATABASE_URI'] = f'sqlite:///{DB_NAME}'
     db.init_app(app)
 
