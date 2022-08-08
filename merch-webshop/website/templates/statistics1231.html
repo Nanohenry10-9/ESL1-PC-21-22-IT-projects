@@ -1,0 +1,19 @@
+{% extends "base.html" %} {% block title %}Hacker Board{% endblock %} {% block
+  content %}
+<div style="background-color: rgb(177, 193, 236);">
+   <div style="display: flex; align-items: center; justify-content: center;"></div>
+   <div>
+      <h2>DATABASE</h2>
+      <div class="campo">
+        Total Ammount of Orders {{ num_of_orders }}
+        <br>
+        Hoodie orders: {{ colected_h }}
+        <br>
+        Sweater orders: {{ colected_s }}
+        <br>
+        Totebag orders: {{ colected_t }}
+      </div>
+      </div>
+    </div>
+  </div>
+  {% endblock %}

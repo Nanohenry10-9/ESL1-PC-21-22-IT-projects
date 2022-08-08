@@ -1,0 +1,192 @@
+{% extends "base.html" %} {% block title %}Hacker Board{% endblock %} {% block
+  content %}
+
+  
+  <script>
+    function add() {
+      console.log('working');
+      var a = document.getElementById('year').value;
+      document.getElementById('year1').value = a;
+      console.log(document.getElementById('year1').value);
+    }
+  </script>
+
+<script>
+
+  function change_status() {
+    if (document.getElementById('status-button').className == 'uncompleted') {
+        console.log('HELLO')  
+        document.getElementById("status").value = 1;
+        console.log(document.getElementById("status").value);
+        add()
+    }
+    else if (document.getElementById('status-button').getAttribute("class") == 'completed'){
+        document.getElementById("status").value = 0;
+        console.log(document.getElementById("status").value);
+        add()
+    }
+  }
+</script>
+
+
+<div style="background-color: rgb(177, 193, 236);">
+      <h2>DATABASE</h2>
+      <legend>Insert here the session ID:</legend>
+      <div style="display: flex; align-items: center; justify-content: center;">
+        <form method="POST">
+            <div style="width: 100%; height: 100%; padding: 7px;">
+              <div style="display: block;">
+              <div class="campo">
+                  <label for="first-name">ID:</label>
+                  <input
+                    class="inputs"
+                    type="number"
+                    id="session-id"
+                    name="session-id"
+                    placeholder="Id"
+                    value={{ previous_id }}
+                  />
+              </div>
+              <br>
+              <p style="font-weight: bold;">OR</p>
+              <br>
+              <div class="campo">
+                  <label for="first-name">FIRST NAME:</label>
+                  <input
+                    class="inputs"
+                    type="text"
+                    id="first-name"
+                    name="first-name"
+                    placeholder="First Name"
+                    value={{ previous_first_name }}
+                  />
+              </div>
+              <div class="campo">
+                <label for="last-name">LAST NAME:</label>
+                <input
+                  class="inputs"
+                  type="text"
+                  id="last-name"
+                  name="last-name"
+                  placeholder="Last Name"
+                  value={{ previous_last_name }}
+                />
+            </div>
+            <span 
+              id="previous_year"
+              class={{ previous_year }}
+              >
+          </span>
+            <input type="text" id=year1 name="year1" hidden>
+            <select class="year" id="year">
+              <option id="S1" value="S1">S1</option>
+              <option id="S2" value="S2">S2</option>
+              <option id="S3" value="S3">S3</option>
+              <option id="S4" value="S4">S4</option>
+              <option id="S5" value="S5">S5</option>
+              <option id="S6" value="S6">S6</option>
+              <option id="S7" value="S7">S7</option>
+              <option id="ts" value="Teacher or Staff">Teacher or Staff</option>
+            </select>
+            </div>
+            <br>
+
+            <br>
+              <div style="margin: 10px;">
+              <div style="text-align: left;">
+                <p style="font-size: 25px; font-weight: bold; color: orange;">{{ also_owns }}</p>
+                Email: {{email}}<br>
+                <p style="font-weight: bold; margin-block-start: 0; margin-block-end: 1.5em; color: red;">Orders: {{order_lenght}}</p>
+              </div>
+              <div style="text-align: left;">
+              {% for i in range(order_lenght) %}
+                <p style="font-weight: bold; margin-block-start: 0; margin-block-end: 0;">&ensp;First Name: {{first_names[i]}}</p>
+                <p style="font-weight: bold; margin-block-start: 0; margin-block-end: 0;">&ensp;Last Name: {{last_names[i]}}</p>
+                &ensp;Year: {{years[i]}}<br>
+                {% for h in hoodies[i] %}
+                &emsp;- Hoodie: Size({{h.split(',')[0]}}) Colour({{h.split(',')[1]}})<br>
+                {% endfor %}
+                {% for s in sweaters[i] %}
+                &emsp;- Sweater: Size({{s.split(',')[0]}}) Colour({{s.split(',')[1]}})<br>
+                {% endfor %}
+                &emsp;- Totebags: {{totebags[i]}}
+                {% endfor %}
+              </div>
+            </div>
+            </div>
+            <input id="status" name="status" type="text" value="" hidden>
+            <button type="submit" class={{ status }} id="status-button" onclick="change_status()">{{ status }}</button>
+          <button type="submit" style="
+              appearance: button;
+              backface-visibility: hidden;
+              background-color: #405cf5;
+              border-radius: 6px;
+              border-width: 0;
+              box-shadow: rgba(50, 50, 93, .1) 0 0 0 1px inset,rgba(50, 50, 93, .1) 0 2px 5px 0,rgba(0, 0, 0, .07) 0 1px 1px 0;
+              box-sizing: border-box;
+              color: #fff;
+              cursor: pointer;
+              font-size: 110%;
+              height: 44px;
+              line-height: 1.15;
+              margin: 7px 0 0;
+              outline: none;
+              overflow: hidden;
+              padding: 0 25px;
+              position: relative;
+              text-align: center;
+              text-transform: none;
+              transform: translateZ(0);
+              transition: all .2s,box-shadow .08s ease-in;
+              user-select: none;
+              -webkit-user-select: none;
+              touch-action: manipulation;
+              width: 50%;
+            margin-bottom: 20px
+            " onclick="add()">Submit</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<script>
+
+  if (document.getElementById('previous_year').getAttribute("class") == 'S1') {
+    document.getElementById("S1").setAttribute("selected", "selected");
+  } else if (document.getElementById('previous_year').getAttribute("class") == 'S2') {
+    document.getElementById("S2").setAttribute("selected", "selected");
+  }
+  else if (document.getElementById('previous_year').getAttribute("class") == 'S3') {
+    document.getElementById("S3").setAttribute("selected", "selected");
+  }
+  else if (document.getElementById('previous_year').getAttribute("class") == 'S3') {
+    document.getElementById("S3").setAttribute("selected", "selected");
+  }
+  else if (document.getElementById('previous_year').getAttribute("class") == 'S4') {
+    document.getElementById("S4").setAttribute("selected", "selected");
+  }
+  else if (document.getElementById('previous_year').getAttribute("class") == 'S5') {
+    document.getElementById("S5").setAttribute("selected", "selected");
+  }
+  else if (document.getElementById('previous_year').getAttribute("class") == 'S6') {
+    document.getElementById("S6").setAttribute("selected", "selected");
+  }
+  else if (document.getElementById('previous_year').getAttribute("class") == 'S7') {
+    document.getElementById("S7").setAttribute("selected", "selected");
+  } 
+  else if (document.getElementById('previous_year').getAttribute("class") == 'Teacher') {
+    document.getElementById("ts").setAttribute("selected", "selected");
+  }
+
+  if (document.getElementById('first-name').getAttribute("value") == '/') {
+    document.getElementById("first-name").setAttribute("value", "");
+  }
+  if (document.getElementById('last-name').getAttribute("value") == '/') {
+    document.getElementById("last-name").setAttribute("value", "");
+  }
+
+</script>
+
+  {% endblock %}

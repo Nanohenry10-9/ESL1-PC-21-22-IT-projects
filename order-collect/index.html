@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<title>Order manager</title>
+
+		<style>
+			* {
+				box-sizing: border-box;
+				font-family: Verdana;
+			}
+
+			html, body {
+				margin: 0;
+				padding: 0;
+			}
+
+			#search-wrapper {
+				position: sticky;
+				top: 0;
+				left: 0;
+				width: 100%;
+				background-color: #000;
+				padding: 8px 5px;
+			}
+
+			#search-str {
+				width: 100%;
+				font-size: 25px;
+				border-radius: 10px;
+				padding: 5px 10px;
+				border: none;
+			}
+
+			#order-list-wrapper {
+				background-color: #FFF;
+				width: 100%;
+				font-size: 16px;
+				user-select: none;
+				-webkit-touch-callout: none;
+				-ms-user-select: none;
+			}
+
+			#order-list {
+				width: 100%;
+				border-collapse: collapse;
+				table-layout: fixed;
+			}
+
+			#order-list td {
+				padding: 15px 10px;
+			}
+
+			#order-list tr:nth-child(even) {
+				background: #CCC;
+			}
+
+			#order-list tr:nth-child(odd) {
+				background: #EEE;
+			}
+
+			.item-btn {
+				color: #FFF;
+				background-color: #47F;
+				padding: 10px;
+				border-radius: 10px;
+				font-size: 16px;
+			}
+
+			.item-btn:not(:last-child) {
+				margin-bottom: 5px;
+			}
+
+			.item-btn.collected {
+				opacity: 0.5;
+			}
+
+			.item-btn:active, .item-btn:hover {
+				background-color: #25D;
+				cursor: pointer;
+			}
+
+			.item-btn.update:active, .item-btn.update:hover {
+				background-color: #222;
+				cursor: pointer;
+			}
+
+			#name-input-wrapper {
+				z-index: 99;
+				background-color: #FFF;
+				position: absolute;
+				left: 0;
+				top: 0;
+				width: 100%;
+				height: 100%;
+				padding: 10px 20px;
+			}
+
+			#name-input-wrapper p, #name-input-wrapper input {
+				font-size: 32px;
+				margin: 10px 0;
+				width: 100%;
+			}
+
+			.order-class, .order-id {
+				padding: 4px 8px;
+				border-radius: 5px;
+				color: #FFF;
+				margin: 2px 0;
+				display: inline-block;
+			}
+
+			.order-class {
+				background-color: #2A5;
+			}
+
+			.order-id {
+				background-color: #222;
+			}
+		</style>
+	</head>
+	<body>
+		<div id="name-input-wrapper">
+			<p id="name-title">Who are you?</p>
+			<input id="name-str" type="text" placeholder="Name">
+			<input id="name-go" type="button" value="Go">
+		</div>
+		<div id="search-wrapper">
+			<input id="search-str" type="text" placeholder="Search...">
+		</div>
+		<div id="order-list-wrapper">
+			<table id="order-list"></table>
+		</div>
+
+		<script src="https://www.gstatic.com/firebasejs/8.2.5/firebase-app.js"></script>
+		<script src="https://www.gstatic.com/firebasejs/8.2.5/firebase-analytics.js"></script>
+		<script src="https://www.gstatic.com/firebasejs/8.2.5/firebase-auth.js"></script>
+		<script src="https://www.gstatic.com/firebasejs/8.2.5/firebase-firestore.js"></script>
+
+
+		<script>
+			const firebaseConfig = {
+				// NOTE: information redacted.
+
+				// This webpage will not work without this object. It contains access keys to the
+				// Firebase database. They should allow for read/write access and thus they must
+				// not be published anywhere. This is strictly speaking not recommended in a web
+				// app, but it is "fine" for such a small scale system.
+
+				// If you need assistance, please contact the maintainer of this repository.
+			};
+
+			firebase.initializeApp(firebaseConfig);
+			var db = firebase.firestore();
+
+			var data = null;
+			var search = document.getElementById("search-str").value;
+			var username = "";
+			var listed = false;
+
+			function nlStr(s) {
+				return s.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+			}
+
+			function load() {
+				data = new Map();
+
+				db.collection("orders").get().then(function(coll) {
+					coll.forEach(function(doc) {
+						data.set(doc.id, doc.data());
+					});
+					if (listed) {
+						list();
+					}
+				});
+			}
+
+			function update(dataKey, index, collected) {
+				data.get(dataKey).items[index].collectedAt = collected? (new Date() / 1000 | 0) : 0;
+				data.get(dataKey).items[index].collectedBy = collected? username : "";
+				data.get(dataKey).items[index].collected = collected;
+
+				db.collection("orders").doc(dataKey).set(data.get(dataKey));
+			}
+
+			function list() {
+				listed = true;
+
+				var table = document.getElementById("order-list");
+				while (table.children.length > 0) {
+					table.removeChild(table.children[0]);
+				}
+
+				if (data == null) {
+					return;
+				}
+				var nlSearch = nlStr(search);
+				for (var k of data.keys()) {
+					if (search.length == 0 || nlStr(data.get(k).name).indexOf(nlSearch) != -1) {
+						var row = document.createElement("tr");
+						var nameColumn = document.createElement("td");
+						nameColumn.classList.add("order-name");
+						nameColumn.innerHTML = `${data.get(k).name} <span class="order-class">${data.get(k).class}</span> <span class="order-id">${data.get(k).id}</span>`;
+						row.appendChild(nameColumn);
+						var itemColumn = document.createElement("td");
+						itemColumn.classList.add("order-items");
+						for (var i = 0; i < data.get(k).items.length; i++) {
+							var btn = document.createElement("div");
+							btn.classList.add("item-btn");
+							btn.onclick = function() {
+								this.classList.toggle("collected");
+								if (this.classList.contains("collected")) {
+									this.innerHTML = this.getAttribute("original") + " (collected by " + username + ")";
+								} else {
+									this.innerHTML = this.getAttribute("original");
+								}
+								update(this.getAttribute("dataKey"), this.getAttribute("itemIndex"), this.classList.contains("collected"));
+							};
+							btn.setAttribute("name", data.get(k).name);
+							btn.setAttribute("dataKey", k);
+							btn.setAttribute("itemIndex", i);
+
+							btn.innerHTML = data.get(k).items[i].name;
+							// Add .replace(/ \([^\(\)]+\)/g, "") to the line above to remove trailing text in parantheses
+							// E.g. "John Doe (S6)" ==> "John Doe"
+
+							btn.setAttribute("original", btn.innerHTML);
+							if (data.get(k).items[i].collected) {
+								const name = data.get(k).items[i].collectedBy;
+								btn.innerHTML = btn.getAttribute("original") + " (collected by " + (name.length > 0? name : "unknown") + ")";
+								btn.classList.add("collected");
+							}
+							itemColumn.appendChild(btn);
+						}
+						row.appendChild(itemColumn);
+						table.appendChild(row);
+					}
+				}
+			}
+
+			document.getElementById("search-str").addEventListener("keyup", function(evt) {
+				if (search != this.value) {
+					search = this.value;
+					list();
+				}
+			});
+
+			document.getElementById("name-go").addEventListener("click", function() {
+				username = document.getElementById("name-str").value;
+				document.getElementById("name-input-wrapper").style.display = "none";
+				list();
+			});
+
+			load();
+		</script>
+	</body>
+</html>
